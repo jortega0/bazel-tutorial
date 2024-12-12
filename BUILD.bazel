@@ -1,3 +1,4 @@
 load("//:hello.bzl", "hello")
 
 hello(name = "hello_world")
+hello(name = "hello_juan", input="Juan")
