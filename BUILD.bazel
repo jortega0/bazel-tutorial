@@ -1,4 +1,4 @@
 load("//:hello.bzl", "hello")
 
-hello(name = "hello_world")
-hello(name = "hello_juan", input="Juan")
+hello(name = "hello_world", replacement = "World")
+hello(name = "hello_juan", replacement="Juan")

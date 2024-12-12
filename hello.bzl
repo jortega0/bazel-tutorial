@@ -7,12 +7,21 @@ echo "#################"
 def _hello_impl(ctx):
     file_object = ctx.actions.declare_file("{}.txt".format(ctx.label.name))
 
-    ctx.actions.expand_template(
-        template = ctx.file._hello_tpl,
-        substitutions = {
-            "{{REPLACE_ME}}": ctx.attr.input,
-        },
-        output = file_object,
+    args = []
+    args += ["--input_file", ctx.file._hello_tpl.path]
+    args += ["--output_file", file_object.path]
+    args += ["--string_to_replace", ctx.attr.string_to_replace]
+    args += ["--replacement", ctx.attr.replacement]
+
+    ctx.actions.run(
+        executable = ctx.executable._transform,
+        inputs = [ctx.file._hello_tpl],
+        outputs = [file_object],
+        arguments = args,
+        progress_message = "Generating %s" % ctx.label.name,
+        tools = [
+            ctx.attr._transform.default_runfiles.files,
+        ],
     )
 
     read_script = ctx.actions.declare_file(ctx.label.name + "_read.sh")
@@ -38,12 +47,21 @@ hello = rule(
     executable = True,
     doc = "Writes a hello world Text file",
     attrs = {
-        "input": attr.string(
-            default = "World",
+        "string_to_replace": attr.string(
+            default = "{{REPLACE_ME}}",
+        ),
+        "replacement": attr.string(
+            mandatory = True,
         ),
         "_hello_tpl": attr.label(
             allow_single_file = True,
             default = Label("//:hello_template.txt.tpl"),
+        ),
+        "_transform": attr.label(
+            providers = [PyInfo],
+            executable = True,
+            cfg = "exec",
+            default = Label("//tools:transform"),
         ),
     },
 )
