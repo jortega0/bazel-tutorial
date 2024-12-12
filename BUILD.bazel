@@ -1,0 +1,3 @@
+load("//:hello.bzl", "hello")
+
+hello(name = "hello_world")
